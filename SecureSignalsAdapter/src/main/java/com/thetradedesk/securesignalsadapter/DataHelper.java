@@ -8,6 +8,7 @@ import com.uid2.client.IdentityTokens;
 import com.uid2.client.PublisherUid2Client;
 import com.uid2.client.TokenRefreshResponse;
 
+import java.util.OptionalInt;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -48,7 +49,7 @@ public class DataHelper {
             @Override
             public void run() {
                 try {
-                    refreshToken(it);
+                    refreshToken(it, 0);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -56,15 +57,23 @@ public class DataHelper {
         }, REFRESH_INTERVAL, REFRESH_INTERVAL);
     }
 
-    public void refreshToken(IdentityTokens it) throws Exception {
+    public void refreshToken(IdentityTokens it, Integer retry) throws Exception {
         if (it.isRefreshable()) {
             TokenRefreshResponse res = client.refreshToken(it);
-            IdentityTokens identity = res.getIdentity();
-            if (identity != null) {
-                setIdentityTokens(identity);
+            if (res.isSuccess()) {
+                setIdentityTokens(res.getIdentity());
+            } else if (res.isOptout()) {
+                clearIdentityTokens();
+                sendMessage(TTDMessage.OPTOUT);
+            } else if (retry < 3) {
+                refreshToken(it, retry + 1);
+            } else {
+                sendMessage(TTDMessage.REFRESH_TOKEN_RETRY_FAILED);
+                throw new Exception("Failed after retry refreshing for 3 times.");
             }
         } else {
             sendMessage(TTDMessage.REFRESH_TOKEN_EXPIRED);
+            clearIdentityTokens();
             throw new Exception("identity stored cannot be refreshed, please generate new identity");
         }
     }
@@ -78,5 +87,15 @@ public class DataHelper {
             Message message1 = handler.obtainMessage(1, message);
             handler.sendMessage(message1);
         }
+    }
+
+    /**
+     * Used when:
+     * 1. User opted out
+     * 2. Refresh Token has expired
+     * 3. Android developer actively clear it.
+     */
+    public void clearIdentityTokens() {
+        this.cache.remove(ADVERTISING_TOKEN);
     }
 }

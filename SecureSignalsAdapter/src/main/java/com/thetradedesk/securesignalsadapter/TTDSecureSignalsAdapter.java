@@ -15,7 +15,6 @@ public final class TTDSecureSignalsAdapter implements SecureSignalsAdapter {
 
     private static final VersionInfo AdapterVersion = new VersionInfo(1, 0, 1);
     private DataHelper dataHelper = SingletonFactory.getInstance();
-    private IdentityTokens identityTokens;
 
     @Override
     public VersionInfo getSDKVersion() {
@@ -33,19 +32,22 @@ public final class TTDSecureSignalsAdapter implements SecureSignalsAdapter {
             // Collect and encrypt the signals.
             // TODO: Now `isDueForRefresh` returns true when timestamp is after refresh_from or advertising_token has expired
             //  we can consider separate these 2 cases to have better control
-            if (identityTokens.isDueForRefresh()) {
-                if (identityTokens.isRefreshable()) {
-                    dataHelper.refreshToken(identityTokens);
-                    // Just throw exception instead of waiting for the refresh to return because collect signals has a timeout of 500ms
-                    throw new Exception("Identity Tokens are due to refresh while collecting signals, refreshing but signals not ready for collecting");
-                } else {
-                    dataHelper.sendMessage(TTDMessage.REFRESH_TOKEN_EXPIRED);
-                    throw new Exception("Identity Tokens due to refresh but refresh token has expired");
+            //  (e.g. decide to whether to pass the advertising token when it needs refreshing according to whether it's expired)
+            IdentityTokens it = dataHelper.getIdentityTokens();
+            if (it != null) {
+                if (it.isDueForRefresh()) {
+                    try {
+                        dataHelper.refreshToken(it, 0);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
+                // Pass the encrypted signals to IMA SDK.
+                secureSignalsCollectSignalsCallback.onSuccess(it.getJsonString());
+            } else {
+                // If stored identity tokens are null, user may have opted out, or refresh token has expired.
+                secureSignalsCollectSignalsCallback.onSuccess("");
             }
-            String signals = identityTokens.getJsonString();
-            // Pass the encrypted signals to IMA SDK.
-            secureSignalsCollectSignalsCallback.onSuccess(signals);
         } catch (Exception e) {
             // Pass signal collection failures to IMA SDK.
             secureSignalsCollectSignalsCallback.onFailure(e);
@@ -58,13 +60,13 @@ public final class TTDSecureSignalsAdapter implements SecureSignalsAdapter {
             // Initialize your SDK and any dependencies.
             // TODO: confirm with google side about the timing of initializing
             IdentityTokens it = dataHelper.getIdentityTokens();
-            if (it.isRefreshable()) {
-                dataHelper.refreshToken(it);
-            } else {
-                dataHelper.sendMessage(TTDMessage.REFRESH_TOKEN_EXPIRED);
-                throw new Exception("Refresh token has expired");
+            if (it.isDueForRefresh()) {
+                try {
+                    dataHelper.refreshToken(it, 0);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-            identityTokens = dataHelper.getIdentityTokens();
             // Notify IMA SDK of initialization success.
             secureSignalsInitializeCallback.onSuccess();
         } catch (Exception e) {
