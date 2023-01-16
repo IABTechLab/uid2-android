@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace 'com.thetradedesk.securesignalsadapter'
+    namespace 'com.thetradedesk.securesignals'
     compileSdk 32
 
     defaultConfig {
@@ -31,7 +31,6 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'com.google.ads.interactivemedia.v3:interactivemedia:3.29.0'
-    implementation 'com.uid2:uid2-client:4.0.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'

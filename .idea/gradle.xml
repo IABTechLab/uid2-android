@@ -9,7 +9,7 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/SecureSignalsAdapter" />
+            <option value="$PROJECT_DIR$/SecureSignals" />
             <option value="$PROJECT_DIR$/app" />
           </set>
         </option>

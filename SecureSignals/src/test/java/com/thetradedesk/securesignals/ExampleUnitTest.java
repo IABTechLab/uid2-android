@@ -1,4 +1,4 @@
-package com.thetradedesk.securesignalsadapter;
+package com.thetradedesk.securesignals;
 
 import org.junit.Test;
 
