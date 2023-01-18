@@ -12,6 +12,6 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "AndroidSDKApplication"
+rootProject.name = "android-uid2-ima-plugin"
 include ':app'
-include ':SecureSignals'
+include ':secure-signals'
