@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 rootProject.name = "android-uid2-ima-plugin"
 include ':app'
 include ':secure-signals'
+include ':uid2-client'
