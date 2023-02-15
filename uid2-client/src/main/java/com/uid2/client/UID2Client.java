@@ -37,7 +37,7 @@ public class UID2Client {
         try (Response response = client.newCall(request).execute()) {
 
         } catch (IOException e) {
-            
+
         }
     }
 }
