@@ -2,8 +2,11 @@ package com.uid2.client;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.util.Base64;
 
-import java.io.IOException;
+import com.uid2.client.networking.DataEnvelope;
+import com.uid2.client.networking.refresh.RefreshAPIPackage;
+import com.uid2.client.networking.refresh.TokenRefreshResponse;
 
 import okhttp3.Headers;
 import okhttp3.MediaType;
@@ -28,16 +31,23 @@ public class UID2Client {
         }
     }
 
-    public void refreshIdentity(String refreshToken, String refreshResponseKey) {
+    public RefreshAPIPackage refreshIdentity(String refreshToken, String refreshResponseKey) {
         Request request = new Request.Builder()
                 .url(uid2BaseURL)
                 .headers(headers)
                 .post(RequestBody.create(refreshToken, FORM))
                 .build();
         try (Response response = client.newCall(request).execute()) {
+            final String responseString = response.body() != null ? response.body().toString() : "";
+            if (!response.isSuccessful()) {
+                throw new Exception("Unexpected code " + response + " " + responseString);
+            }
 
-        } catch (IOException e) {
-
+            String decryptedResponseString = DataEnvelope.decrypt(responseString, Base64.decode(refreshResponseKey, Base64.DEFAULT), true, null);
+            TokenRefreshResponse tokenRefreshResponse = new TokenRefreshResponse(decryptedResponseString);
+            return tokenRefreshResponse.toRefreshAPIPackage();
+        } catch (Exception e) {
+            return null;
         }
     }
 }

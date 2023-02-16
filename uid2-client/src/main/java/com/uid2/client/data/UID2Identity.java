@@ -29,7 +29,7 @@ public class UID2Identity {
         return fromJson(new JSONObject(jsonString), jsonString);
     }
 
-    static public UID2Identity fromJson(JSONObject json, String jsonString) throws JSONException {
+    static private UID2Identity fromJson(JSONObject json, String jsonString) throws JSONException {
         return new UID2Identity(getJsonString(json, "advertising_token"), getJsonString(json, "refresh_token"), getRefreshResponseKey(json),
                 getInstant(json, "identity_expires"), getInstant(json, "refresh_expires"), getInstant(json, "refresh_from"), jsonString);
     }
