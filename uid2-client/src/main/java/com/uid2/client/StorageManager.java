@@ -11,7 +11,7 @@ public class StorageManager {
     private static String PREFERENCE_FILE_KEY = "com.uid2.client.storage";
     private static String IDENTITY_PACKAGE_KEY = "com.uid2.client.storage.identity";
     private SharedPreferences sp;
-    private static StorageManager shared;
+    public static StorageManager shared;
 
     public static StorageManager getInstance(Context context) {
         if (shared == null) {
