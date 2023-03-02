@@ -10,9 +10,13 @@ android {
     defaultConfig {
         minSdk 21
         targetSdk 32
+        versionCode 1
+        versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
+
+        manifestPlaceholders = [uid2_api_url: "\${uid2_api_url}", uid2_refresh_retry_time: "\${uid2_refresh_retry_time}"]
     }
 
     buildTypes {
@@ -31,7 +35,7 @@ android {
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.0'
     implementation 'com.google.android.material:material:1.7.0'
-    implementation "androidx.startup:startup-runtime:1.0.0"
+    implementation "androidx.startup:startup-runtime:1.1.0"
     implementation 'androidx.core:core-ktx:+'
     implementation 'com.squareup.okhttp3:okhttp:5.0.0-alpha.11'
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'

@@ -14,7 +14,9 @@ public class TokenRefreshResponse {
     public TokenRefreshResponse(String decryptedResponseString) throws JSONException {
         JSONObject responseJson = new JSONObject(decryptedResponseString);
         status = responseJson.getString("status");
-        body = responseJson.getString("body");
+        if (status.equals("success")) {
+            body = responseJson.getString("body");
+        }
     }
 
     public UID2Identity toUID2Identity() throws JSONException {

@@ -5,11 +5,13 @@
     <application>
         <provider
             android:name="androidx.startup.InitializationProvider"
-            android:authorities="${applicationId}.com.uid2.client"
+            android:authorities="${applicationId}.androidx-startup"
             android:exported="false"
             tools:node="merge">
             <meta-data  android:name="com.uid2.client.UID2ManagerInitializer"
                 android:value="androidx.startup" />
         </provider>
+        <meta-data android:name="uid2_api_url" android:value="${uid2_api_url}" />
+        <meta-data android:name="uid2_refresh_retry_time" android:value="${uid2_refresh_retry_time}" />
     </application>
 </manifest>

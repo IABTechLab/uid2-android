@@ -16,29 +16,30 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class UID2Client {
-    private String uid2BaseURL;
+    private final String refreshPath = "/v2/token/refresh";
+    private final String uid2BaseURL;
     private final static MediaType FORM = MediaType.get("application/x-www-form-urlencoded");
     private final OkHttpClient client = new OkHttpClient();
     private Headers headers;
 
-    public UID2Client(String uid2BaseURL, Context context) {
-        uid2BaseURL = uid2BaseURL;
+    public UID2Client(String _uid2BaseURL, Context context) {
+        uid2BaseURL = _uid2BaseURL + refreshPath;
         try {
-            int versionCode = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
-            headers = new Headers.Builder().add("X-UID2-Client-Version: Android-" + versionCode).build();
+            String versionName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
+            headers = new Headers.Builder().add("X-UID2-Client-Version: Android-" + versionName).build();
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    public RefreshAPIPackage refreshIdentity(String refreshToken, String refreshResponseKey) {
+    public RefreshAPIPackage refreshIdentity(String refreshToken, String refreshResponseKey) throws Exception {
         Request request = new Request.Builder()
                 .url(uid2BaseURL)
                 .headers(headers)
                 .post(RequestBody.create(refreshToken, FORM))
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            final String responseString = response.body() != null ? response.body().toString() : "";
+            final String responseString = response.body().string();
             if (!response.isSuccessful()) {
                 throw new Exception("Unexpected code " + response + " " + responseString);
             }
@@ -47,7 +48,7 @@ public class UID2Client {
             TokenRefreshResponse tokenRefreshResponse = new TokenRefreshResponse(decryptedResponseString);
             return tokenRefreshResponse.toRefreshAPIPackage();
         } catch (Exception e) {
-            return null;
+            throw new Exception(e);
         }
     }
 }

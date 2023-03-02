@@ -7,5 +7,10 @@ public enum IdentityStatus {
     NO_IDENTITY,
     INVALID,
     REFRESH_EXPIRED,
-    OPT_OUT
+    OPT_OUT;
+    public boolean canBeRefreshed() {
+        return this == ESTABLISHED || this == REFRESHED || this == EXPIRED;
+    }
 }
+
+

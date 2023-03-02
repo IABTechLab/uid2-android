@@ -1,6 +1,8 @@
 package com.uid2.client;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
 
 import androidx.lifecycle.MutableLiveData;
 
@@ -23,43 +25,42 @@ public class UID2Manager {
     private MutableLiveData<UID2Identity> identity;
     private MutableLiveData<IdentityStatus> identityStatus;
     private UID2Client client;
-    private boolean autoRefreshEnabled = true;
+    private boolean autoRefreshEnabled;
     private RepeatingTimer timer;
 
     private UID2Manager(Context context) {
         // Initialize token persistence storage singleton
         StorageManager.getInstance(context);
 
-        // Initialize uid2 request client
+        // get saved auto refresh preference
+        autoRefreshEnabled = StorageManager.shared.getAutoRefreshPreference();
+
+        // Get configuration from app settings
         String uid2ApiUrl = defaultUid2ApiUrl;
-        client = new UID2Client(defaultUid2ApiUrl, context);
+        int refreshTime = defaultUid2RefreshRetry;
+        try {
+            Bundle bundle = context.getPackageManager().getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA).metaData;
+            uid2ApiUrl = (String)bundle.get("uid2_api_url");
+            refreshTime = (int)bundle.get("uid2_refresh_retry_time");
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        // Initialize uid2 request client
+        client = new UID2Client(uid2ApiUrl, context);
+
+        // Initialize uid2 live data
+        identity = new MutableLiveData<UID2Identity>(null);
+        identityStatus = new MutableLiveData<IdentityStatus>(IdentityStatus.NO_IDENTITY);
 
         // Initialize refresh timer
-        int refreshTime = defaultUid2RefreshRetry;
-        timer = new RepeatingTimer(refreshTime, new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    UID2Identity storedIdentity = StorageManager.shared.getIdentity();
-                    if (storedIdentity == null) {
-                        return;
-                    }
-                    UID2Identity validIdentity = validateAndSetIdentity(storedIdentity);
-                    if (validIdentity == null) {
-                        return;
-                    }
-                    triggerRefreshOrTimer(validIdentity);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        timer = new RepeatingTimer(refreshTime, autoRefreshEnabled);
 
+        // If token persisted, take it out.
         try {
             UID2Identity storedIdentity = StorageManager.shared.getIdentity();
             if (storedIdentity != null) {
-                identity.setValue(storedIdentity);
-                identityStatus.setValue(IdentityStatus.ESTABLISHED);
+                validateAndSetIdentity(storedIdentity, IdentityStatus.ESTABLISHED, null);
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -88,7 +89,7 @@ public class UID2Manager {
     }
 
     public void setIdentity(UID2Identity _identity) {
-        UID2Identity validIdentity = validateAndSetIdentity(_identity);
+        UID2Identity validIdentity = validateAndSetIdentity(_identity, IdentityStatus.ESTABLISHED, null);
         if (validIdentity != null) {
             triggerRefreshOrTimer(validIdentity);
         }
@@ -99,8 +100,8 @@ public class UID2Manager {
     }
 
     public void resetIdentity() {
-        identity.setValue(null);
-        identityStatus.setValue(null);
+        identity.postValue(null);
+        identityStatus.postValue(IdentityStatus.NO_IDENTITY);
         StorageManager.shared.deleteIdentity();
     }
 
@@ -108,9 +109,9 @@ public class UID2Manager {
      * Manual Refresh
      */
     public void refreshIdentity() {
-        UID2Identity currentIdentity = identity.getValue();
-        if (currentIdentity != null) {
-            refreshToken(currentIdentity);
+        IdentityStatus status = identityStatus.getValue();
+        if (status.canBeRefreshed()) {
+            refreshToken(identity.getValue());
         }
     }
 
@@ -123,11 +124,16 @@ public class UID2Manager {
             return;
         }
         autoRefreshEnabled = enabled;
+        StorageManager.shared.saveAutoRefreshPreference(enabled);
         if (enabled) {
             timer.resume();
         } else {
             timer.stop();
         }
+    }
+
+    public boolean getAutoRefreshed() {
+        return autoRefreshEnabled;
     }
 
     private UID2Identity validateAndSetIdentity(UID2Identity uid2Identity) {
@@ -136,33 +142,37 @@ public class UID2Manager {
 
     private UID2Identity validateAndSetIdentity(UID2Identity uid2Identity, IdentityStatus status, String statusText) {
         if (status == IdentityStatus.OPT_OUT) {
-            identity.setValue(null);
+            identity.postValue(null);
             StorageManager.shared.deleteIdentity();
-            identityStatus.setValue(IdentityStatus.OPT_OUT);
+            identityStatus.postValue(IdentityStatus.OPT_OUT);
             return null;
         }
 
-        IdentityPackage validity = IdentityPackage.fromIdentity(uid2Identity);
-        identityStatus.setValue(validity.status);
+        IdentityPackage validity = IdentityPackage.fromIdentity(uid2Identity, status == IdentityStatus.ESTABLISHED);
+        identityStatus.postValue(validity.status);
         UID2Identity validIdentity = validity.identity;
         if (validIdentity == null) {
             return null;
         }
-        if (validIdentity.advertisingToken == identity.getValue().advertisingToken) {
+        if (identity.getValue() != null && validIdentity.advertisingToken == identity.getValue().advertisingToken) {
             return validIdentity;
         }
-        identity.setValue(validIdentity);
+        identity.postValue(validIdentity);
         StorageManager.shared.saveIdentity(validIdentity);
         return validIdentity;
     }
 
     private void refreshToken(UID2Identity identity) {
-        RefreshAPIPackage response = client.refreshIdentity(identity.refreshToken, identity.refreshResponseKey);
-        validateAndSetIdentity(response.identity, response.status,response.message);
+        try {
+            RefreshAPIPackage response = client.refreshIdentity(identity.refreshToken, identity.refreshResponseKey);
+            validateAndSetIdentity(response.identity, response.status,response.message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void triggerRefreshOrTimer(UID2Identity validIdentity) {
-        if (validIdentity.refreshFrom.isAfter(Instant.now())) {
+        if (validIdentity.refreshFrom.isBefore(Instant.now())) {
             refreshToken(validIdentity);
         } else if (autoRefreshEnabled) {
             timer.resume();

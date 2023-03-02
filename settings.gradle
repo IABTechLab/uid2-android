@@ -13,6 +13,7 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "android-uid2-ima-plugin"
-include ':app'
+include ':uid2-plugin-tester'
 include ':secure-signals'
 include ':uid2-client'
+include ':uid2-sdk-demo'

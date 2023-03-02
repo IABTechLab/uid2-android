@@ -10,6 +10,7 @@ import org.json.JSONException;
 public class StorageManager {
     private static String PREFERENCE_FILE_KEY = "com.uid2.client.storage";
     private static String IDENTITY_PACKAGE_KEY = "com.uid2.client.storage.identity";
+    private static String AUTO_REFRESH_ENABLED = "com.uid2.client.storage.auto_refresh.enabled";
     private SharedPreferences sp;
     public static StorageManager shared;
 
@@ -41,6 +42,22 @@ public class StorageManager {
     public void deleteIdentity() {
         SharedPreferences.Editor editor = sp.edit();
         editor.remove(IDENTITY_PACKAGE_KEY);
+        editor.apply();
+    }
+
+    public void saveAutoRefreshPreference(boolean autoRefreshEnabled) {
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putBoolean(AUTO_REFRESH_ENABLED, autoRefreshEnabled);
+        editor.apply();
+    }
+
+    public boolean getAutoRefreshPreference() {
+        return sp.getBoolean(AUTO_REFRESH_ENABLED, true);
+    }
+
+    public void deleteAutoRefreshPreference() {
+        SharedPreferences.Editor editor = sp.edit();
+        editor.remove(AUTO_REFRESH_ENABLED);
         editor.apply();
     }
 }

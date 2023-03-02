@@ -51,7 +51,7 @@ public class UID2Identity {
     }
 
     static private Instant getInstant(JSONObject json, String key) throws JSONException {
-        return Instant.parse(getJsonString(json, key));
+        return Instant.ofEpochMilli(json.getLong(key));
     }
 
     public String getJsonString() {

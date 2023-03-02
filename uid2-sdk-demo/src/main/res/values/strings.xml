@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">UID2-SDK-Demo</string>
+    <string name="action_settings">Settings</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">UID2 Publisher App</string>
+    <string name="second_fragment_label">UID2 SDK Demo</string>
+    <string name="next">Next</string>
+    <string name="to_uid2_sdk_demo">UID2 SDK DEMO</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Welcome to UID Demo</string>
+    <string name="hello_uid2_SDK_demo">Welcome to UID2 SDK Demo</string>
+    <string name="pii_input_hint">Please input an email or phone number</string>
+    <string name="generate_button_text">GEN</string>
+
+    <string name="identity_status">Identity Status</string>
+    <string name="identity_message">Identity Message</string>
+    <string name="advertising_token">advertising_token</string>
+    <string name="refresh_token">refresh_token</string>
+    <string name="identity_expires">identity_expires</string>
+    <string name="refresh_from">refresh_from</string>
+    <string name="refresh_expires">refresh_expires</string>
+    <string name="refreshResponseKey">refreshResponseKey</string>
+
+    <string name="manual_refresh_button_text">Manual Refresh</string>
+    <string name="toggle_auto_refresh">Auto Refresh</string>
+    <string name="reset_identity">Reset</string>
+
+
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+</resources>

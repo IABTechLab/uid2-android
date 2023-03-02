@@ -6,7 +6,6 @@ import java.util.TimerTask;
 public class RepeatingTimer {
     private int retryTimeInMilliseconds;
     private Timer timer;
-    private TimerTask task;
 
     private enum State {
         SUSPENDED,
@@ -14,10 +13,11 @@ public class RepeatingTimer {
     }
     private State state = State.SUSPENDED;
 
-    public RepeatingTimer(int retryTimeInMilliseconds, TimerTask timerTask) {
-        retryTimeInMilliseconds = retryTimeInMilliseconds;
-        task = timerTask;
-        timer = new Timer();
+    public RepeatingTimer(int _retryTimeInMilliseconds, boolean autoRefreshEnabled) {
+        retryTimeInMilliseconds = _retryTimeInMilliseconds;
+        if (autoRefreshEnabled) {
+            resume();
+        }
     }
 
     public void resume() {
@@ -28,7 +28,12 @@ public class RepeatingTimer {
             timer = new Timer();
         }
         state = State.RESUMED;
-        timer.schedule(task, retryTimeInMilliseconds, retryTimeInMilliseconds);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                UID2Manager.shared.refreshIdentity();
+            }
+        }, retryTimeInMilliseconds, retryTimeInMilliseconds);
     }
 
     public void stop() {
