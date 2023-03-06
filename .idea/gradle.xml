@@ -10,6 +10,7 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/gms" />
             <option value="$PROJECT_DIR$/secure-signals" />
             <option value="$PROJECT_DIR$/uid2-client" />
             <option value="$PROJECT_DIR$/uid2-plugin-tester" />
