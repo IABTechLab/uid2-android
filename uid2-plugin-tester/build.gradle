@@ -19,6 +19,8 @@ android {
         multiDexEnabled true
         versionCode 1
         versionName "1.0"
+
+        manifestPlaceholders = [uid2_api_url: "https://operator-integ.uidapi.com", uid2_refresh_retry_time: "5000"]
     }
     buildTypes {
         release {

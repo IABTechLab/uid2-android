@@ -1,7 +1,6 @@
 package com.uid2.securesignals.ima;
 
 import android.content.Context;
-import android.content.Intent;
 
 import androidx.annotation.Keep;
 
