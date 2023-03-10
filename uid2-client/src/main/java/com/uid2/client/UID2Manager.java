@@ -10,12 +10,12 @@ import com.uid2.client.data.IdentityPackage;
 import com.uid2.client.data.IdentityStatus;
 import com.uid2.client.data.UID2Identity;
 import com.uid2.client.networking.refresh.RefreshAPIPackage;
+import com.uid2.client.UID2Client;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.time.Instant;
-import java.util.TimerTask;
 
 public class UID2Manager {
     public static UID2Manager shared;

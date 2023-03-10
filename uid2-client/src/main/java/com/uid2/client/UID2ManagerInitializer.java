@@ -7,7 +7,6 @@ import androidx.startup.Initializer;
 
 import java.util.Collections;
 import java.util.List;
-import com.uid2.client.UID2Client;
 
 public class UID2ManagerInitializer implements Initializer {
     @NonNull
