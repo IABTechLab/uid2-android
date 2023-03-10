@@ -5,11 +5,11 @@ import java.io.ByteArrayOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
-class PostUtil(private val url: String, private val headerList: List<Pair<String, String>>) {
+class HttpClient(private val url: String, private val headerList: List<Pair<String, String>>) {
     private var readTimeout: Int = 5000
     private var connectTimeout: Int = 5000
 
-    fun send(data: String): String {
+    fun post(data: String): String {
         return try {
             val conn: HttpURLConnection = URL(url).openConnection() as HttpURLConnection
 
