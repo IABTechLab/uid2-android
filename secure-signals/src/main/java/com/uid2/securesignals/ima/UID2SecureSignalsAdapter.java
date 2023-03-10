@@ -30,7 +30,6 @@ public final class UID2SecureSignalsAdapter implements SecureSignalsAdapter {
     @Override
     public void collectSignals(Context context, SecureSignalsCollectSignalsCallback secureSignalsCollectSignalsCallback) {
         try {
-            versionName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
             // Collect and encrypt the signals.
             secureSignalsCollectSignalsCallback.onSuccess(UID2Manager.shared.getIdentity().getValue().getJsonString());
         } catch (Exception e) {
@@ -42,7 +41,7 @@ public final class UID2SecureSignalsAdapter implements SecureSignalsAdapter {
     @Override
     public void initialize(Context context, SecureSignalsInitializeCallback secureSignalsInitializeCallback) {
         try {
-
+            versionName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
             // Initialize your SDK and any dependencies.
             // Notify IMA SDK of initialization success.
             secureSignalsInitializeCallback.onSuccess();
